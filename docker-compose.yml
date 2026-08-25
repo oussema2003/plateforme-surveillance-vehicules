@@ -1,0 +1,59 @@
+services:
+
+  # --- Workers RTSP : un conteneur par camera, tous ecrivent dans le meme
+  #     fichier JSON partage (verrouille via fcntl dans VehicleJSONStore). ---
+
+  camera_entree:
+    build: .
+    restart: unless-stopped
+    command: ["python", "vehicle_pipeline.py",
+              "--source", "rtsp://user:pass@192.168.1.10:554/stream1",
+              "--log", "/data/vehicules.json", "--no-display"]
+    volumes:
+      - ./data/shared:/data
+      - ./data/plate_images:/data/plate_images
+      - ./models:/app/models:ro
+    # Decommentez pour activer le GPU (necessite nvidia-container-toolkit) :
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  camera_sortie:
+    build: .
+    restart: unless-stopped
+    command: ["python", "vehicle_pipeline.py",
+              "--source", "rtsp://user:pass@192.168.1.11:554/stream1",
+              "--log", "/data/vehicules.json", "--no-display"]
+    volumes:
+      - ./data/shared:/data
+      - ./data/plate_images:/data/plate_images
+      - ./models:/app/models:ro
+
+  # --- API : point d'entree unique pour integrer le systeme dans n'importe
+  #     quel autre projet (lit/ecrit le meme JSON partage que les cameras). ---
+
+  api:
+    build: .
+    restart: unless-stopped
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/shared:/data
+      - ./data/plate_images:/data/plate_images
+      - ./static:/app/static
+      - ./models:/app/models:ro
+    environment:
+      - OUTPUT_PATH=/data/vehicules.json
+      - PLATE_IMAGES_DIR=/data/plate_images
+    # Dashboard web (ajout de cameras + resultats en direct) disponible sur
+    # http://localhost:8000/ une fois ce service demarre.
+
+# Pour ajouter une camera : dupliquez un bloc camera_*, changez son nom et
+# l'URL RTSP dans --source. Chaque conteneur est isole (une camera qui
+# plante ne coupe pas les autres) mais tous partagent /data/shared, donc
+# l'API voit toujours l'ensemble des vehicules, toutes cameras confondues.

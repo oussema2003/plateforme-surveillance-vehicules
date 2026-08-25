@@ -1,0 +1,25 @@
+# Detection / tracking
+ultralytics>=8.3.0
+torch>=2.2.0
+torchvision>=0.17.0
+
+# Vision / traitement image
+opencv-python-headless>=4.9.0
+numpy>=1.26
+
+# OCR de la plaque
+easyocr>=1.7.1
+
+# API HTTP (mode "integration dans n'importe quel projet")
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+
+# Remarques :
+# - Pour une image GPU (CUDA), installez torch/torchvision depuis l'index
+#   officiel PyTorch correspondant a votre version de CUDA plutot que PyPI :
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# - easyocr telecharge ses poids au premier lancement (connexion internet
+#   requise une fois, puis mise en cache). Pour un deploiement hors-ligne,
+#   pre-telechargez les poids et montez-les en volume, ou remplacez par un
+#   OCR embarque / un modele de lecture de plaque dedie.

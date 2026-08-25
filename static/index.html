@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centre de surveillance — Reconnaissance véhicule</title>
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-alt: #F1F5F9;
+    --border: #E2E8F0;
+    --text: #1E293B;
+    --muted: #64748B;
+    --secondary: #60A5FA;
+    --accent: #06B6D4;
+    --btn-hover: #1D4ED8;
+    --warn: #F59E0B;
+    --error: #EF4444;
+    --success: #10B981;
+    --stopped: #94A3B8;
+    --shadow-sm: 0 1px 2px rgba(30, 41, 59, 0.06);
+    --shadow-md: 0 4px 16px rgba(30, 41, 59, 0.08);
+    --shadow-lg: 0 8px 32px rgba(30, 41, 59, 0.1);
+    --radius: 12px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* --- En-tête --- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  header .logo {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    backdrop-filter: blur(4px);
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  header .eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    opacity: 0.85;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .health {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.18);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 12px;
+    backdrop-filter: blur(4px);
+  }
+
+  #health-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+  #health-dot.ok { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.35); }
+  #health-dot.down { background: var(--error); box-shadow: 0 0 0 3px rgba(239,68,68,0.35); }
+
+  /* --- Contenu principal --- */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 32px 48px;
+  }
+
+  /* --- Bandeau stats --- */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .stat-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .stat-icon.cam { background: rgba(96,165,250,0.15); }
+  .stat-icon.veh { background: rgba(6,182,212,0.15); }
+  .stat-icon.live { background: rgba(16,185,129,0.15); }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  /* --- Sections --- */
+  section {
+    margin-bottom: 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  section > h2, .section-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  section > h2::before, .section-header h2::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    background: linear-gradient(180deg, var(--secondary), var(--accent));
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(96,165,250,0.12);
+    color: var(--secondary);
+  }
+  .badge.accent {
+    background: rgba(6,182,212,0.12);
+    color: var(--accent);
+  }
+
+  /* --- Formulaire caméra --- */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .add-camera {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px 20px;
+  }
+
+  .form-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 2fr 0.8fr 0.8fr auto;
+    gap: 16px;
+    align-items: end;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .field input {
+    background: var(--surface-alt);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus {
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(96,165,250,0.2);
+    background: var(--surface);
+  }
+  .field input::placeholder { color: #94A3B8; }
+  .field small { color: var(--muted); font-size: 10.5px; }
+
+  button.primary {
+    background: var(--secondary);
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(96,165,250,0.35);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
+  }
+  button.primary:hover:not(:disabled) {
+    background: var(--btn-hover);
+    box-shadow: 0 4px 14px rgba(29,78,216,0.35);
+    transform: translateY(-1px);
+  }
+  button.primary:active:not(:disabled) { transform: translateY(0); }
+  button.primary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+  #camera-error {
+    grid-column: 1 / -1;
+    color: var(--error);
+    font-family: var(--mono);
+    font-size: 12px;
+    display: none;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    padding: 10px 14px;
+    border-radius: 8px;
+  }
+
+  /* --- Grille caméras --- */
+  .camera-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .camera-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .camera-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .camera-feed {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #0F172A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .camera-feed img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .camera-feed .placeholder {
+    color: #94A3B8;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .rec-badge {
+    position: absolute; top: 10px; left: 10px;
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(15,23,42,0.75);
+    backdrop-filter: blur(4px);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: #fff;
+  }
+  .rec-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--stopped);
+  }
+  .status-running .rec-dot { background: var(--accent); animation: pulse 1.4s infinite; }
+  .status-starting .rec-dot { background: var(--warn); animation: pulse 0.8s infinite; }
+  .status-error .rec-dot { background: var(--error); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .camera-meta { padding: 14px 16px 10px; }
+  .camera-meta .name {
+    font-weight: 700; font-size: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+  .camera-meta .source {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    background: var(--surface-alt);
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  .camera-meta .error-msg {
+    font-family: var(--mono); font-size: 11px; color: var(--error);
+    margin-top: 8px;
+    background: rgba(239,68,68,0.06);
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+
+  .status-tag {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 3px 8px; border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .status-running .status-tag { background: rgba(6,182,212,0.12); color: var(--accent); }
+  .status-starting .status-tag { background: rgba(245,158,11,0.12); color: var(--warn); }
+  .status-error .status-tag { background: rgba(239,68,68,0.1); color: var(--error); }
+  .status-stopped .status-tag, .status-ended .status-tag { background: var(--surface-alt); color: var(--stopped); }
+
+  .camera-actions {
+    display: flex; justify-content: flex-end;
+    padding: 0 16px 14px;
+  }
+  button.ghost {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  button.ghost:hover {
+    border-color: var(--error);
+    color: var(--error);
+    background: rgba(239,68,68,0.05);
+  }
+
+  .empty-state {
+    color: var(--muted);
+    font-size: 13px;
+    padding: 36px 24px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+    background: var(--surface);
+  }
+  .empty-state .empty-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+
+  /* --- Table véhicules --- */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    text-align: left;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+    font-weight: 600;
+  }
+  tbody td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(96,165,250,0.04); }
+
+  .plate {
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background: rgba(6,182,212,0.08);
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    border: 1px solid rgba(6,182,212,0.2);
+  }
+  .thumb {
+    width: 150px; height: 55px; object-fit: cover;
+    border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-alt);
+    display: block;
+    box-shadow: var(--shadow-sm);
+  }
+  .thumb-missing {
+    width: 64px; height: 42px;
+    border-radius: 6px; border: 1px dashed var(--border);
+    background: var(--surface-alt);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--muted); text-align: center;
+    line-height: 1.2;
+  }
+  .conf {
+    font-family: var(--mono); color: var(--muted); font-size: 12px;
+  }
+
+  .conf-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .conf-bar .bar {
+    width: 48px; height: 5px;
+    background: var(--surface-alt);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .conf-bar .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--accent));
+    border-radius: 999px;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 20px 32px 28px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  footer span {
+    color: var(--secondary);
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    header { padding: 14px 20px; }
+    main { padding: 20px 16px 36px; }
+    .stats-bar { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .add-camera { padding: 18px; }
+    button.primary { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">🚗</div>
+    <div>
+      <span class="eyebrow">Reco-Véhicule</span>
+      <h1>Centre de surveillance</h1>
+    </div>
+  </div>
+  <div class="health">
+    <span id="health-dot"></span>
+    <span id="health-text">connexion…</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon cam">📷</div>
+      <div>
+        <div class="stat-label">Caméras actives</div>
+        <div class="stat-value" id="stat-cameras">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon live">●</div>
+      <div>
+        <div class="stat-label">En direct</div>
+        <div class="stat-value" id="stat-live">0</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon veh">🔍</div>
+      <div>
+        <div class="stat-label">Véhicules détectés</div>
+        <div class="stat-value" id="stat-vehicles">0</div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-header">
+      <h2>Ajouter une caméra</h2>
+    </div>
+    <div class="panel">
+      <form class="add-camera" id="camera-form">
+        <div class="form-row">
+          <div class="field">
+            <label for="cam-name">Nom</label>
+            <input id="cam-name" type="text" placeholder="Entrée parking" required>
+          </div>
+          <div class="field">
+            <label for="cam-source">Flux (RTSP ou fichier vidéo)</label>
+            <input id="cam-source" type="text" placeholder="rtsp://user:pass@192.168.1.10:554/stream1" required>
+          </div>
+          <div class="field">
+            <label for="cam-skip">Frame skip</label>
+            <input id="cam-skip" type="number" value="10" min="1">
+          </div>
+          <div class="field">
+            <label for="cam-conf">Confiance</label>
+            <input id="cam-conf" type="number" value="0.5" step="0.05" min="0.05" max="0.95">
+          </div>
+          <button class="primary" type="submit" id="add-btn">▶ Démarrer</button>
+        </div>
+        <div id="camera-error"></div>
+      </form>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-header">
+      <h2>Caméras actives</h2>
+      <span class="badge" id="camera-count">0 caméra</span>
+    </div>
+    <div class="camera-grid" id="camera-grid">
+      <div class="empty-state">
+        <div class="empty-icon">📷</div>
+        Aucune caméra ajoutée — utilisez le formulaire ci-dessus pour démarrer.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-header">
+      <h2>Véhicules détectés</h2>
+      <span class="badge accent" id="vehicle-count">0 véhicule</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Plaque</th>
+            <th>Image</th>
+            <th>Marque</th>
+            <th>Couleur</th>
+            <th>Confiance</th>
+            <th>Dernière détection</th>
+          </tr>
+        </thead>
+        <tbody id="vehicles-body">
+          <tr><td colspan="6" class="empty-state" style="border:none;">Aucun véhicule enregistré pour l'instant.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Rafraîchissement automatique — <span>caméras: 3s</span> · <span>véhicules: 5s</span> · <span>aperçu live: 2s</span>
+</footer>
+
+<script>
+const STATUS_LABELS = {
+  starting: "Démarrage",
+  running: "En direct",
+  stopped: "Arrêtée",
+  ended: "Terminée",
+  error: "Erreur",
+};
+
+async function checkHealth() {
+  const dot = document.getElementById('health-dot');
+  const text = document.getElementById('health-text');
+  try {
+    const res = await fetch('/health');
+    if (!res.ok) throw new Error();
+    dot.className = 'ok';
+    text.textContent = 'API en ligne';
+  } catch {
+    dot.className = 'down';
+    text.textContent = 'API injoignable';
+  }
+}
+
+function updateStats(cameras, vehicleCount) {
+  const live = cameras.filter(c => c.status === 'running' || c.status === 'starting').length;
+  document.getElementById('stat-cameras').textContent = cameras.length;
+  document.getElementById('stat-live').textContent = live;
+  document.getElementById('stat-vehicles').textContent = vehicleCount;
+  document.getElementById('camera-count').textContent = cameras.length + (cameras.length > 1 ? ' caméras' : ' caméra');
+}
+
+async function loadCameras() {
+  const grid = document.getElementById('camera-grid');
+  let cameras = [];
+  try {
+    const res = await fetch('/cameras');
+    cameras = await res.json();
+  } catch {
+    return;
+  }
+
+  const vehRes = await fetch('/vehicules').catch(() => null);
+  const vehData = vehRes ? await vehRes.json().catch(() => ({})) : {};
+  updateStats(cameras, Object.keys(vehData).length);
+
+  if (cameras.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📷</div>
+        Aucune caméra ajoutée — utilisez le formulaire ci-dessus pour démarrer.
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = cameras.map(cam => {
+    const statusClass = 'status-' + cam.status;
+    const label = STATUS_LABELS[cam.status] || cam.status;
+    const showFeed = cam.status === 'running' || cam.status === 'starting';
+    return `
+      <div class="camera-card ${statusClass}" data-id="${cam.id}">
+        <div class="camera-feed">
+          ${showFeed
+            ? `<img src="/cameras/${cam.id}/frame?t=${Date.now()}" data-feed-img="${cam.id}"
+                 onerror="this.replaceWith(Object.assign(document.createElement('div'),
+                   {className:'placeholder', textContent:'En attente de la première image…'}))">`
+            : `<div class="placeholder">${cam.status === 'error' ? 'Caméra arrêtée (erreur)' : 'Flux arrêté'}</div>`
+          }
+          <div class="rec-badge"><span class="rec-dot"></span>${label.toUpperCase()}</div>
+        </div>
+        <div class="camera-meta">
+          <div class="name">
+            <span>${escapeHtml(cam.name)}</span>
+            <span class="status-tag">${label}</span>
+          </div>
+          <div class="source" title="${escapeHtml(cam.source)}">${escapeHtml(cam.source)}</div>
+          ${cam.error ? `<div class="error-msg">${escapeHtml(cam.error)}</div>` : ''}
+        </div>
+        <div class="camera-actions">
+          <button class="ghost" onclick="stopCamera('${cam.id}')">⏹ Arrêter</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function refreshFeeds() {
+  document.querySelectorAll('[data-feed-img]').forEach(img => {
+    const id = img.getAttribute('data-feed-img');
+    img.src = `/cameras/${id}/frame?t=${Date.now()}`;
+  });
+}
+
+async function stopCamera(id) {
+  await fetch(`/cameras/${id}`, { method: 'DELETE' });
+  loadCameras();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function confBar(pct) {
+  return `<span class="conf-bar">
+    <span class="conf">${pct}%</span>
+    <span class="bar"><span class="bar-fill" style="width:${pct}%"></span></span>
+  </span>`;
+}
+
+function plateImageUrl(vehicle) {
+  if (vehicle.plate_image_url) return vehicle.plate_image_url;
+  if (vehicle.plate_image) {
+    const fileName = String(vehicle.plate_image).split('/').pop();
+    if (fileName) return `/plate_images/${fileName}`;
+  }
+  return null;
+}
+
+document.getElementById('camera-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorBox = document.getElementById('camera-error');
+  const btn = document.getElementById('add-btn');
+  errorBox.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '⏳ Démarrage…';
+
+  const payload = {
+    name: document.getElementById('cam-name').value,
+    source: document.getElementById('cam-source').value,
+    frame_skip: parseInt(document.getElementById('cam-skip').value, 10) || 10,
+    confidence: parseFloat(document.getElementById('cam-conf').value) || 0.5,
+  };
+
+  try {
+    const res = await fetch('/cameras', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Échec de l\'ajout de la caméra');
+    }
+    document.getElementById('camera-form').reset();
+    document.getElementById('cam-skip').value = 10;
+    document.getElementById('cam-conf').value = 0.5;
+    loadCameras();
+  } catch (err) {
+    errorBox.textContent = '⚠ ' + err.message;
+    errorBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ Démarrer';
+  }
+});
+
+async function loadVehicles() {
+  const tbody = document.getElementById('vehicles-body');
+  let data = {};
+  try {
+    const res = await fetch('/vehicules');
+    data = await res.json();
+  } catch {
+    return;
+  }
+
+  const rows = Object.values(data).sort((a, b) =>
+    (b.derniere_detection || '').localeCompare(a.derniere_detection || '')
+  );
+
+  document.getElementById('vehicle-count').textContent = rows.length + (rows.length > 1 ? ' véhicules' : ' véhicule');
+  document.getElementById('stat-vehicles').textContent = rows.length;
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state" style="border:none;">Aucun véhicule enregistré pour l\'instant.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(v => {
+    let imgTag = '<span class="thumb-missing">Pas d\'image</span>';
+    const imageUrl = plateImageUrl(v);
+    if (imageUrl) {
+      imgTag = `<img class="thumb" src="${escapeHtml(imageUrl)}" loading="lazy"
+        onerror="this.replaceWith(Object.assign(document.createElement('span'),
+          {className:'thumb-missing', textContent:'Pas d\\'image'}))">`;
+    }
+    const confPct = v.confidence_plate != null ? Math.round(v.confidence_plate * 100) : null;
+    const conf = confPct != null ? confBar(confPct) : '<span class="conf">—</span>';
+    return `
+      <tr>
+        <td><span class="plate">${escapeHtml(v.matricule || '—')}</span></td>
+        <td>${imgTag}</td>
+        <td>${escapeHtml(v.marque || '—')}</td>
+        <td>${escapeHtml(v.couleur || '—')}</td>
+        <td>${conf}</td>
+        <td class="conf">${escapeHtml(v.derniere_detection || '—')}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+checkHealth();
+loadCameras();
+loadVehicles();
+
+setInterval(checkHealth, 5000);
+setInterval(loadCameras, 3000);
+setInterval(refreshFeeds, 2000);
+setInterval(loadVehicles, 5000);
+</script>
+
+</body>
+</html>

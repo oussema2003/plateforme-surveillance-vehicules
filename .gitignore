@@ -1,0 +1,123 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+venv311/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Models (fichiers trop volumineux pour Git)
+*.pt
+models/*.pt
+best.pt
+yolo26n.pt
+
+# Data and output files
+data/shared/
+data/plate_images/*.jpg
+data/plate_images/*.png
+*.json
+!requirements.json
+output.json
+vehicules.json
+vehicules_cleaned.json
+
+# Video files (trop volumineux)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Images (sauf les exemples dans le README)
+*.jpg
+*.jpeg
+*.png
+!car-plaque.png
+!cars-marque.png
+!static/**/*.png
+!static/**/*.jpg
+
+# Debug outputs
+debug_ocr_crops/
+runs/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker
+.dockerignore
+
+# Environment variables
+.env
+.env.local
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs
+/site
+
+# Backup files
+*.bak
