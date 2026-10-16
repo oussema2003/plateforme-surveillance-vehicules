@@ -1306,11 +1306,11 @@ furnished to do so, subject to the following conditions:
 
 ## 👨‍💻 Auteur
 
-**Votre Nom**  
+**Oussema HIDOURI**  
 Stage en Computer Vision  
-Email : votre.email@example.com  
-LinkedIn : [votre-profil](https://linkedin.com/in/votre-profil)  
-GitHub : [@votre-username](https://github.com/votre-username)
+Email : oussemahidouri@gmail.com 
+LinkedIn : [Oussema Hidouri]([https://linkedin.com/in/votre-profil](https://www.linkedin.com/in/oussama-hidouri-6871932ab/))  
+GitHub : [@Oussema Hidouri](https://github.com/oussema2003)
 
 ---
 
@@ -1321,17 +1321,6 @@ GitHub : [@votre-username](https://github.com/votre-username)
 - **[FastAPI](https://fastapi.tiangolo.com/)** pour le framework web
 - **[OpenCV](https://opencv.org/)** pour le traitement d'image
 - Tous les contributeurs du projet
-
----
-
-## 📞 Support
-
-Pour toute question ou problème :
-
-- 📧 **Email** : votre.email@example.com
-- 💬 **Issues GitHub** : [Ouvrir une issue](https://github.com/votre-username/plateforme-surveillance-vehicules/issues)
-- 📖 **Documentation** : [Wiki du projet](https://github.com/votre-username/plateforme-surveillance-vehicules/wiki)
-- 💼 **LinkedIn** : [Votre profil](https://linkedin.com/in/votre-profil)
 
 ---
 
