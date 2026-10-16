@@ -1309,7 +1309,9 @@ furnished to do so, subject to the following conditions:
 **Oussema HIDOURI**  
 Stage en Computer Vision  
 Email : oussemahidouri@gmail.com. 
-LinkedIn : [@Oussema Hidouri]([https://linkedin.com/in/votre-profil](https://www.linkedin.com/in/oussama-hidouri-6871932ab/))  
+
+LinkedIn : [@Oussema Hidouri]((https://www.linkedin.com/in/oussama-hidouri-6871932ab))  
+
 GitHub : [@Oussema Hidouri](https://github.com/oussema2003)
 
 ---
